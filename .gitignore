@@ -26,3 +26,5 @@ _designs
 __pycache__/
 bin/aiVoice-server
 bin/flowbox-server
+
+*.out
