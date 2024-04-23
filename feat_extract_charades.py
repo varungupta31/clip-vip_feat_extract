@@ -113,36 +113,33 @@ def video_loader(video_path, processor, model):
 
 
 
-output_dir = r'/ssd_scratch/cvit/varun/clipvip_msrvtt_feats'
+output_dir = r'/ssd_scratch/cvit/varun/charades_clipvip_feats'
 if not os.path.exists(output_dir):
     os.makedirs(output_dir)
 
 # msrvtt_annotations_path = r'/home2/varungupta/clip-vip_feat_extract/jupyter_stuff/msrvtt_annotations_formatted.json'
-msrvtt_annotations_path = r'/home2/varungupta/clip-vip_feat_extract/mini.json'
-msrvtt_videos_path = r'/ssd_scratch/cvit/varun/MSRVTT/videos/all'
+# msrvtt_annotations_path = r'/home2/varungupta/clip-vip_feat_extract/mini.json'
+charades_videos_path = r'/ssd_scratch/cvit/varun/MSRVTT/videos/all'
 
-videos_list = natsorted(glob(msrvtt_videos_path + '/*.mp4'))
-msrvtt_annotations = json.load(open(msrvtt_annotations_path, 'r'))
+videos_list = natsorted(glob(charades_videos_path + '/*.mp4'))[:10]
+# msrvtt_annotations = json.load(open(msrvtt_annotations_path, 'r'))
 
 
 #for each video, we create a npy file.
-all_videos = sorted(list(msrvtt_annotations.keys()), reverse=True)
+# all_videos = sorted(list(msrvtt_annotations.keys()), reverse=True)
 
-for video in tqdm(all_videos):
+for video in tqdm(videos_list):
+    vid_name = video.split('/')[-1].split('.')[0]
     if os.path.exists(os.path.join(output_dir, video + '.npy')):
         continue
     st = time.time()
-    video_data = {}
-    contents = msrvtt_annotations[video]
-    video_path = os.path.join(msrvtt_videos_path, video + '.mp4')
-
-    vid_feat = video_loader(video_path, processor, model)
-    video_data["video_feat"] = vid_feat.detach().cpu().numpy()
-    print(vid_feat.shape)
-    for item in contents:
-        caption = item['caption']
-        id = item['id']
-        text_feat = extract_text_features(caption, tokenizer, model)
-        video_data[caption] = text_feat.detach().cpu().numpy()
+    # video_data = {}
+    # contents = msrvtt_annotations[video]
     
-    #np.save(os.path.join(output_dir, video + '.npy'), video_data)
+    # video_path = os.path.join(msrvtt_videos_path, video + '.mp4')
+
+    vid_feat = video_loader(video, processor, model)
+    vid_feat = vid_feat.detach().cpu().numpy()
+    print(vid_feat.shape)
+        
+    np.save(os.path.join(output_dir, vid_name + '.npy'), vid_feat)

@@ -887,7 +887,7 @@ class CLIPVisionTransformer(nn.Module):
             output_hidden_states=output_hidden_states,
             return_dict=return_dict,
         )
-
+    
         last_hidden_state = encoder_outputs[0]
         pooled_output = last_hidden_state[:, 0, :]
         pooled_output = self.post_layernorm(pooled_output)
@@ -1074,9 +1074,23 @@ class CLIPModel(CLIPPreTrainedModel):
             output_hidden_states=output_hidden_states,
             return_dict=return_dict,
         )
+        
+        if self.config.vision_additional_config.return_pooled == False:
+            last_hidden_state = vision_outputs[0]
+            batch_size = last_hidden_state.shape[0]
+            
+            # 49 because 224 image and 32 patches. IF ANYTHING CHANGES, THIS 49 WILL CHANGE.
+            fcount = last_hidden_state.shape[1]//49
 
-        pooled_output = vision_outputs[1]  # pooled_output
-        image_features = self.visual_projection(pooled_output)
+            last_hidden_state = last_hidden_state[:, 4:, :].reshape(batch_size, fcount, -1, last_hidden_state.shape[-1])
+            if self.config.vision_additional_config.patch_pooled:
+                last_hidden_state = last_hidden_state.mean(dim=2)
+            
+            image_features = self.visual_projection(last_hidden_state)
+        
+        else:
+            pooled_output = vision_outputs[1]  # pooled_output
+            image_features = self.visual_projection(pooled_output)
 
         if_norm = if_norm if if_norm is not None else False
         if if_norm:
