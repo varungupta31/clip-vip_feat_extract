@@ -44,7 +44,6 @@ def extract_text_features(texts, tokenizer, model):
     textOutput = model.get_text_features(**tokens)
     return textOutput
 
-
 def read_video_pyav(container, indices):
     frames = []
     container.seek(0)
